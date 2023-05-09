@@ -1,1 +1,2 @@
 import numpy as num
+print(num.sqrt(4))
