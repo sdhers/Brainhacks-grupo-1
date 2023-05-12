@@ -1,0 +1,703 @@
+// measure_bleaching_corrected macro 
+
+///////////////////////////////////////////////////////////////////////////////////
+/*Copyright (C) 2016  Francisco J. Maza.
+* IFIByNE-CONICET/F.C.E.N., Universidad de Buenos Aires
+* 
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+* 
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* 
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
+////////////////////////////////////////////////////////////////////////////////////
+// 2.3 (25/07/2020):	> option to apply movement correction based on coors from Stabilizer applied in a roi, roi must be in the tissueroi folder
+// 2.2 (18/07/2020):	> calculate from false movement video, cretaed with average from original
+// 2.1 (31/05/2019):	> Option added to subtarct from curves the non zero minimum of stacks to be used with non deltaF arbitrary unit videos 
+// 2.0 (10/11/2016):	> Option added in the dialogbox to specify the basal from and basal to frames to shift curve
+// 1.9 (04/11/2016):	> text edition to explain arrays fitting and basal
+// 1.8 (15/04/2016):	> code edition (indentation, unnecessary lines deleted, etc) 
+// 1.7 (11/09/2015):	> Option for substracting moving average added
+// 1.6 (08/06/2015):	> Intervideo shift correction deleted, now its supposed to be done during shift corrections with deltaF macro 
+// 1.5 (15/01/2015):	> Checkbox applied for selecting multiple experiments
+// 1.4 (21/10/2014):	> added option: measure without bleaching correction 
+//						> added option: curve fitting for exponential function		
+// 1.3 (30/07/2014):    > added option: multiple experiments
+// 1.2 (23/07/2014):    > added option: masks calculation
+// 1.1 (10/07/2014):	> added option:substract basal mean in bleaching corrected curve 
+
+macro "measure_bleaching_corrected" {
+	
+	// Get the folder path 
+	String.resetBuffer;
+	DIR_PATH=getDirectory("Select your ImageJ_ImagingAnalysis folder"); //ImageJ_ImagingAnalysis folder should contain the following subfolders :
+										//data (containing "Experiment" folder with .tif videos);
+										//list (containing experiment list created by "create_list macro");
+										//coors (containing roi list coors saved using roi managerAS : "ExperimentName.txt");
+										//masks (containing roiset.zip saved using roi manager AS : "ExperimentName.txt.zip");
+										//data_deltaF (will contain "Experiment" folder with "deltaF" .tif videos);
+										//ImageJ_Output (will receive data results from "measure_bleaching_corrected" macro);
+	//Get all Experiments names
+	ALL_EXP=getFileList(DIR_PATH+"data_deltaF");
+	EXP_ARRAY=newArray(ALL_EXP.length);
+	
+	// Create experiment array
+	for (i=0; i<ALL_EXP.length; i++) {
+		LENGTH=lengthOf(ALL_EXP[i]);
+		EXP_ARRAY[i]=substring(ALL_EXP[i],0,LENGTH);
+		}
+	EXP_ARRAY_WITH_NONE=newArray(EXP_ARRAY.length+1);
+	NONE_Array=newArray("");
+	EXP_ARRAY_WITH_NONE=Array.concat(NONE_Array,EXP_ARRAY);
+		
+	defaults = newArray(EXP_ARRAY.length);
+	for (i=0; i<EXP_ARRAY.length; i++) {
+		defaults[i] = false;
+		}
+	if (EXP_ARRAY.length>10) {
+		rows = 10;
+		columns = (EXP_ARRAY.length+10)/10;
+		}
+	if (EXP_ARRAY.length<=10){
+		rows= EXP_ARRAY.length+1;
+		columns = 1;
+		}
+	n_checkboxes = rows*columns;
+	Dialog.create("Choose Experiment");
+	Dialog.addCheckboxGroup(rows,columns,EXP_ARRAY,defaults);
+	Dialog.show();
+	
+	EXP_ARRAY_SELECTION=newArray(EXP_ARRAY.length);
+	for (s=0;s<EXP_ARRAY.length;s++){
+		if (Dialog.getCheckbox()==true)EXP_ARRAY_SELECTION[s]=EXP_ARRAY[s];
+		else EXP_ARRAY_SELECTION[s]="";
+		}
+	
+	EXP_ARRAY_SELECTION_sorted=Array.copy(EXP_ARRAY_SELECTION);	//this is the array for the expeiments selected to be analized, sorted up-down
+	Array.sort(EXP_ARRAY_SELECTION_sorted);
+	Array.reverse(EXP_ARRAY_SELECTION_sorted);
+		
+	/*--------------------------------------------------------------------------------*/
+	OPTIONS_ARRAY=newArray("Coors","Masks");
+	FIT_OPTIONS_ARRAY=newArray("Log","Exponential");
+	Dialog.create("Options");
+	Dialog.addCheckbox("Compute and apply Stabilizer by tissue roi", false);
+	Dialog.addChoice("Rois from",OPTIONS_ARRAY,"Masks");
+	Dialog.addMessage("\n");
+	Dialog.addMessage("====================");
+	Dialog.addCheckbox("Bleaching correction", true);
+	Dialog.addChoice("Curve fit function",FIT_OPTIONS_ARRAY,"Log");
+	Dialog.addMessage("====================");
+	Dialog.addCheckbox("Subtract moving average",false);
+	Dialog.addNumber("Window size(frames)",100);
+	Dialog.addMessage("====================");
+	Dialog.addMessage("Subtract basal mean?");
+	Dialog.addCheckbox("Subtract basal mean from bleach corrected curve", true);
+	Dialog.addNumber("From StimulusON - (frames)",5);
+	Dialog.addNumber("To StimulusON - (frames)",1);
+	Dialog.addMessage("('From' and 'To' frames included)");
+	Dialog.addMessage("====================");
+	Dialog.addCheckbox("Subtract non zero minimum of video? (used when raw video is measured)", false);
+	Dialog.addMessage("====================");
+	Dialog.show();
+	TissueStabil=Dialog.getCheckbox();
+	ROIS_Source=Dialog.getChoice();
+	BLEACHING_Correction=Dialog.getCheckbox();
+	CURVE_fitting=Dialog.getChoice();
+	movingwindowaverage_SUBSTRACT=Dialog.getCheckbox();
+	WINDOW_SIZE=Dialog.getNumber();
+	BASAL_SUBSTRACT=Dialog.getCheckbox();
+	BASAL_FROM=Dialog.getNumber();;
+	BASAL_TO=Dialog.getNumber();;
+	SUBTRACT_NON_ZERO_MINIMUM=Dialog.getCheckbox();
+	/*--------------------------------------------------------------------------------*/
+	for (ex=0;ex<EXP_ARRAY_SELECTION_sorted.length;ex++){ //start loop for selected MULTIPLE experiments
+		if (EXP_ARRAY_SELECTION_sorted[ex]=="") {
+			//setBatchMode("exit and display");
+			showStatus("Finished");
+			// Creation of the finished dialog box
+			Dialog.create("measure");
+			Dialog.addMessage("Finished");
+			beep();
+			wait(500);
+			beep();
+			wait(500);
+			beep();
+			Dialog.show();
+			exit;
+			}
+		else {
+			EXP_NAME=EXP_ARRAY_SELECTION_sorted[ex];
+			EXP_N=substring(EXP_NAME,0,lengthOf(EXP_NAME)-1);
+			EXP=substring(EXP_NAME,0,lengthOf(EXP_NAME)-8);
+			
+			//Get all file names
+			ALL_NAMES=getFileList(DIR_PATH+"data_deltaF/"+EXP_NAME);
+			ALL_EXT=newArray(ALL_NAMES.length);
+			
+			//Create extensions array
+			for (i=0; i<ALL_NAMES.length; i++) {
+				LENGTH=lengthOf(ALL_NAMES[i]);
+				ALL_EXT[i]=substring(ALL_NAMES[i],LENGTH-4,LENGTH);
+				}
+			
+			
+			//List Arrays for reading variables
+			LIST_DIR= DIR_PATH +"list/"+EXP_N+"_list"+".txt";	//experiment list location
+			filestring=File.openAsString(LIST_DIR);
+			rows=split(filestring, "\n");
+			videoNumber=newArray(rows.length);
+			VIDEO_LIST=newArray(rows.length);
+			BIN_LIST=newArray(rows.length);
+			StimulusON_LIST=newArray(rows.length);
+			StimulusOFF_LIST=newArray(rows.length);
+			Stimulus2ON_LIST=newArray(rows.length);
+			Stimulus2OFF_LIST=newArray(rows.length);
+			ROILIST_LIST=newArray(rows.length);
+			xShift_LIST=newArray(rows.length);
+			yShift_LIST=newArray(rows.length);
+			framestoexcl_LIST=newArray(rows.length);
+				
+			//make list arrays
+			for(i=1; i<rows.length; i++) {
+				columns=split(rows[i],"\t");
+				videoNumber[i]=i;
+				VIDEO_LIST[i]=columns[2];
+				BIN_LIST[i]=columns[3];
+				StimulusON_LIST[i]=columns[4];
+				StimulusOFF_LIST[i]=columns[5];
+				Stimulus2ON_LIST[i]=columns[6];
+				Stimulus2OFF_LIST[i]=columns[7];
+				ROILIST_LIST[i]=columns[8];
+				xShift_LIST[i]=columns[9];
+				yShift_LIST[i]=columns[10];
+				framestoexcl_LIST[i]=columns[11];
+				}
+			
+			
+			//Start For loop for VIDEO_LIST
+			for (v=1; v<VIDEO_LIST.length; v++) {
+				//run("Collect Garbage");
+				// Get the file path and name
+				FILE_PATH=DIR_PATH+"data_deltaF/"+EXP_N+"/"+VIDEO_LIST[v]; //open videos from DELTAF folder
+				FILE_NAME=File.getName(FILE_PATH);
+				FILE_NAME_LENGTH=lengthOf(FILE_NAME);
+				FILE_SHORTNAME=substring(FILE_NAME,0,FILE_NAME_LENGTH-4);
+				
+				//set variables from list arrays
+				VIDEO_NAME=VIDEO_LIST[v];
+				bin=BIN_LIST[v];
+				StimulusON=StimulusON_LIST[v];
+				StimulusOFF=StimulusOFF_LIST[v];	
+				start_basal=(StimulusON)-5;
+				stop_basal=(StimulusON)-1;
+				//xShift=(-1)*xShift_LIST[v];
+				//yShift=(-1)*yShift_LIST[v];
+				framestoexcl=framestoexcl_LIST[v];
+				rois=ROILIST_LIST[v];
+				/*-------------------------------------------------------------------------------------------------------*/	
+				//setBatchMode(true); //run faster, avoid opening images
+				
+				if (TissueStabil==true){
+					
+					open(FILE_PATH);
+					open(DIR_PATH+"tissueroi/"+EXP_N+".roi");
+					run("Crop");
+					
+				   	/*-------------------------------------------------------------------------------------------------------*/
+					//compute movement video from original clipped to tissue roi
+					Stack.getDimensions(width, height, channels, slices, frames);
+					VIDEO_NAME_SHORTNAME=substring(VIDEO_NAME,0,lengthOf(VIDEO_NAME)-4);
+					if (slices >1) { // check whether the stack is made of "slices" or "frames"
+						framesnumber=slices;
+						}
+					else {
+						framesnumber=frames;
+					}
+					rename(VIDEO_NAME);
+					wait(3000);
+					run("Image Stabilizer", "transformation=Translation maximum_pyramid_levels=1 template_update_coefficient=0.90 maximum_iterations=200 error_tolerance=0.0000001 log_transformation_coefficients output_to_a_new_stack");
+					selectImage("Stablized "+ VIDEO_NAME_SHORTNAME);
+					close();
+					selectImage(VIDEO_NAME);
+					close();
+					wait(3000);
+					
+					/*---------------------------------------------------------------------------------------------*/
+					open(FILE_PATH);
+					wait(3000);
+					run("Image Stabilizer Log Applier", " ");
+					rename("forfitting");
+					
+					//save log shifts file
+					if (File.exists(DIR_PATH+"ImageJ_Output_Stabil_shifts/"+EXP_N+"_roisresults/")==false){	//look for output folder, if doesn't exist yet, create it
+						File.makeDirectory(DIR_PATH+"ImageJ_Output_Stabil_shifts/"+EXP_N+"_roisresults/");
+						}
+					OUTPUT_DIR=DIR_PATH+"ImageJ_Output_Stabil_shifts/"+EXP_N+"_roisresults/";
+					selectWindow(VIDEO_NAME_SHORTNAME+".log");
+					saveAs("Text",OUTPUT_DIR+VIDEO_NAME_SHORTNAME+".log");
+					run("Close");
+					
+					selectImage("forfitting");
+					//setBatchMode(true); //run faster, avoid opening images
+				}
+				
+				if (TissueStabil==false){
+					open(FILE_PATH);
+					//setBatchMode(true); //run faster, avoid opening images
+					}
+				
+				wait(2000);
+				/*-----------------------------------------------------------------------------------------------------*/
+			   	if (SUBTRACT_NON_ZERO_MINIMUM==true){
+			   		run("Duplicate...", "duplicate");
+			   		rename("forminimum");
+			   		Stack.getDimensions(width, height, channels, slices, frames);
+					w=width;
+					h=height;
+					if (slices >1) {
+						total=slices;
+						}	
+					else {
+						total=frames;
+						}
+					slice=1;
+					
+					while (slice<=total){
+						setSlice(slice);
+						for (vx=0; vx<w ;vx++){
+							for (vy=0;vy<h;vy++){
+								if ((getPixel(vx, vy))==0){
+									setPixel(vx, vy, 65535);
+									}
+								}
+							}
+						slice +=1;
+						}
+			   	Stack.getStatistics(voxelCount, mean, min, max, stdDev);
+				non_zero_minimum=min;
+				selectImage("forminimum");
+				close();
+				}
+			   	
+			   	//run("Translate...", "x=xShift y=yShift interpolation=None stack");  //be careful not to set this if intervideo option was done before
+			   	if (nSlices>1) run("Clear Results");
+			     			    
+				if(ROIS_Source=="Coors"){
+					//for roi coor
+					//open roi list
+					roi_path= DIR_PATH+"coors/";
+					filestring=File.openAsString(roi_path+ rois);
+					rows=split(filestring, "\n");
+					roiNumber=newArray(rows.length);
+					x=newArray(rows.length);
+					y=newArray(rows.length);
+					
+					//start For loop making rois at coors
+					for(i=1; i<rows.length; i++) {
+						columns=split(rows[i],"");
+						roiNumber[i]=i;	//parseInt(columns[0]);
+						x[i]=parseFloat(columns[3]);
+						y[i]=parseFloat(columns[4]);
+						
+						row= nResults();
+						setResult("Roi",row,roiNumber[i]);
+						setResult("x",row,x[i]);
+						setResult("y",row,y[i]);
+						
+						updateResults();
+				     						      
+						xcoor=getResult("x",rows[i]);
+						ycoor=getResult("y",rows[i]);	
+						run("Clear Results");
+						selectWindow("forfitting");
+						makeOval(xcoor,ycoor,20,20);	//makeOval(xcoor+xShift,ycoor+yShift,20,20); //make oval roi at coor from the roi list
+				
+								
+						getVoxelSize(w, h, d, unit);
+						n = getSliceNumber();
+						for (f=1; f<=nSlices; f++) {
+							setSlice(f);
+							getStatistics(area, mean, min, max, std);
+							row1 = nResults;
+							setResult("frame", row1, f);
+							setResult("Mean ", row1, mean);
+							setResult("Std ", row1, std);
+							setResult("Min ", row1, min);
+							setResult("Max ", row1, max);
+					                }
+						setSlice(n);
+						updateResults();
+					
+						// Curve Fitting 
+							//Making arrays with results data
+								
+						r = nResults();
+						x1 = newArray(r);
+						
+						for (g=0; g<x1.length; g++){
+							x1[g] = getResult("frame", g);
+							}
+						
+						y1 = newArray(r);
+								
+						for (g=0; g<x1.length; g++){
+							y1[g] = getResult("Mean ",g);
+							}
+						//setBatchMode(true); //show fit plot window
+						// Do a "log" line fit with the x, y arrays
+						stimON=(StimulusON)-1; //frame for stimulus onset, -1 for array 
+						FASTA=3;//frames to exclude after start record 
+						FASTI=framestoexcl;//frames to exclude after stimulus onset 
+						FASTE=0;//frames to exclude before stimON 
+						fitxa= Array.slice(x1,FASTA,stimON-FASTE);//x array that exclude frames before stimON
+						fitya= Array.slice(y1,FASTA,stimON-FASTE);//y array that exclude frames before stimON
+						fitxb=Array.slice(x1,stimON+FASTI);//x array that exclude frames  after stimON
+						fityb=Array.slice(y1,stimON+FASTI);//y array that exclude frames after stimON
+						fitx=Array.concat(fitxa, fitxb);
+						fity=Array.concat(fitya, fityb);
+						if (CURVE_fitting=="Log") {Fit.doFit ("log", fitx, fity);}
+						if (CURVE_fitting=="Exponential") {Fit.doFit ("Exponential", fitx, fity);}
+						//*print("a="+d2s(Fit.p(0),6)+", b="+d2s(Fit.p(1),6)+", R2="+Fit.rSquared()); //for printing the fit funtion in the log window
+						Fit.plot();
+						if (CURVE_fitting=="Log"){
+							a= Fit.p(0);
+							b= Fit.p(1);	
+							}
+						if (CURVE_fitting=="Exponential"){
+							a= Fit.p(0);
+							b= Fit.p(1);	
+							}
+							
+						rename("Curve Fits");
+							
+						//Curve Fitting correction on results Array
+							//Making arrays with results data corrected
+						
+						r = nResults();
+						xc = newArray(r);	//bc array with corrected results
+						
+						for (q=0; q<xc.length; q++){
+							xc[q] = getResult("frame", q);
+							}
+						
+						yc = newArray(r);
+								
+						if (BLEACHING_Correction==false) {
+							for (q=0; q<xc.length; q++){
+								yc[q] = (getResult("Mean ",q));	//results without curve fitting correction
+								}
+							}
+						
+						if (BLEACHING_Correction==true){
+							for (q=0; q<xc.length; q++){
+								if (CURVE_fitting=="Log") {yc[q] = (getResult("Mean ",q))-((a)*(log(b*q)));	//fitted log function subtraction
+									}	
+								if (CURVE_fitting=="Exponential") {
+									yc[q] = (getResult("Mean ",q))-((a)*(exp(b*q)));	//fitted exponential function substraction
+									} 
+								}
+							}
+						 
+						run("Clear Results");
+						for (h=0; h<xc.length; h++) {
+							setResult("Frame", h, h+1);
+							setResult("Value", h, yc[h]);
+							updateResults;
+						 	}
+			
+					/*----------------------------------------------------------------------------------------------------------------------*/	
+						//setting basal frames pre stimulus as zero basal
+						if (BASAL_SUBSTRACT==true){		
+								startbasal=BASAL_FROM;	//how many frames before stimulus onset for basal start
+								stopbasal=BASAL_TO;	//how many frames before stimulus onset for basal stop
+								bas=((StimulusON)-1))-(startbasal);//-1 for array
+								bas_minusone=((StimulusON)-1))-(stopbasal);//-1 for array
+								basal_mean_array=Array.slice(yc,bas,(bas_minusone+1)); //+1 to include it in the basal
+								
+								Array.getStatistics(basal_mean_array, min, max, mean, stdDev);
+								basal=mean;
+								r = nResults();
+								xcbasal = newArray(r); //bcbasal array with corrected results
+								
+								for (q=0; q<xcbasal.length; q++){
+									xcbasal[q] = getResult("Frame", q);
+									}
+								
+								ycbasal = newArray(r);
+										
+								for (q=0; q<xcbasal.length; q++){
+									ycbasal[q] = (getResult("Value",q))-(basal);	//fitted log function subtraction
+									}
+								 
+								
+								//save the bleach_corrected deltaF curve
+								Array.print(ycbasal);
+								}
+						//subtract from the trace the minimum value of the whole stack that is not zero
+						if (SUBTRACT_NON_ZERO_MINIMUM==true){		
+								r = nResults();
+								yc_lessmin = newArray(r);
+										
+								for (q=0; q<yc_lessmin.length; q++){
+									yc_lessmin[q] = (getResult("Value",q))-(non_zero_minimum); //fitted log function subtraction
+									}
+								 
+								//save the bleach_corrected deltaF curve
+								Array.print(yc_lessmin);
+								}
+							
+					
+					/*---------------------------------------------------------------------------------------------------------------------------------*/
+						else {
+							Array.print(yc);		
+							}
+								
+						close();
+						run ("Clear Results");
+						
+						}	//end of rois iteration loop if COORS!!!!
+					}	//end for Coors option
+					
+				/*==========================================================================================================================*/	      
+				
+				if(ROIS_Source=="Masks"){
+					//FOR managerlist
+					//open roi ".zip" list
+					roi_path= DIR_PATH+"masks/";
+					run("ROI Manager...");
+					roiManager("reset");
+					if (File.exists(roi_path+ rois+".zip")==true) roiManager("Open", roi_path+ rois+".zip");	//open .zip if multiple rois 
+					else {
+						roiManager("Open", roi_path+ rois+".roi");	//apoen .roi, roi file for if one roi
+						}	
+				
+					//start analysis iterating rois from .zip list
+					items= roiManager("count");
+					for(p=0;p<items;p++) {
+						selectWindow("forfitting");
+						roiManager("Select", p);
+						getVoxelSize(w, h, d, unit);
+						n = getSliceNumber();
+						for (i=1; i<=nSlices; i++) {
+							setSlice(i);
+							getStatistics(area, mean, min, max, std);
+							row = nResults;
+							setResult("frame", row, i);
+							setResult("Mean ", row, mean);
+							setResult("Std ", row, std);
+							setResult("Min ", row, min);
+							setResult("Max ", row, max);
+							}
+						setSlice(n);
+						updateResults();
+							
+						
+						// Curve Fitting 
+							//Making arrays with results data
+						
+						r = nResults();
+						x1 = newArray(r);
+						
+						for (g=0; g<x1.length; g++){
+							x1[g] = getResult("frame", g);
+							}
+						
+						y1 = newArray(r);
+									
+						for (g=0; g<x1.length; g++){
+							y1[g] = getResult("Mean ",g);
+							}
+						//setBatchMode(true); //show fit plot window
+						// Do a "log" line fit with the x, y arrays
+						stimON=(StimulusON)-1; //frame for stimulus onset, -1 for array
+						FASTA=3;//frames to exclude after start record 
+						FASTI=framestoexcl;//frames to exclude after stimulus onset 
+						FASTE=0;//frames to exclude before stimON 
+						fitxa= Array.slice(x1,FASTA,stimON-FASTE);//x array that exclude frames before stimON
+						fitya= Array.slice(y1,FASTA,stimON-FASTE);//y array that exclude frames before stimON
+						fitxb=Array.slice(x1,stimON+FASTI);//x array that exclude frames after stimON
+						fityb=Array.slice(y1,stimON+FASTI);//y array that exclude frames after stimON
+						fitx=Array.concat(fitxa, fitxb);
+						fity=Array.concat(fitya, fityb);
+						if (CURVE_fitting=="Log"){Fit.doFit ("log", fitx, fity);}
+						if (CURVE_fitting=="Exponential"){ Fit.doFit ("Exponential", fitx, fity);}
+						//*print("a="+d2s(Fit.p(0),6)+", b="+d2s(Fit.p(1),6)+", R2="+Fit.rSquared()); //for printing the fit funtion in the log window
+						Fit.plot();
+						if (CURVE_fitting=="Log"){
+							a= Fit.p(0);
+							b= Fit.p(1);
+							}
+						if (CURVE_fitting=="Exponential"){
+						  	a= Fit.p(0);
+							b= Fit.p(1);
+							}
+							
+						rename("Curve Fits");
+														
+						// Curve Fitting correction on results Array
+							//Making arrays with results data corrected
+							
+						r = nResults();
+						xc = newArray(r);	//bc array with corrected results
+						
+						for (q=0; q<xc.length; q++){
+							xc[q] = getResult("frame", q);
+							}
+						
+						yc = newArray(r);
+								
+						if (BLEACHING_Correction== false) {
+							for (q=0; q<xc.length; q++){
+								yc[q] = (getResult("Mean ",q));	//results without curve fitting correction
+								}
+							}
+						if (BLEACHING_Correction==true){
+							for (q=0; q<xc.length; q++){
+								if (CURVE_fitting=="Log") {yc[q] = (getResult("Mean ",q))-((a)*(log(b*q)));}	//fitted log function subtraction
+								if (CURVE_fitting=="Exponential"){ yc[q] = (getResult("Mean ",q))-((a)*(exp(b*q)));}	//fitted exponential function subtraction
+								}
+							}
+				 
+						 run("Clear Results");
+						 for (h=0; h<xc.length; h++) {
+							setResult("Frame", h, h+1);
+							setResult("Value", h, yc[h]);
+							updateResults;
+						 	}
+					/*-------------------------------------------------------------------------------------*/
+						if (movingwindowaverage_SUBSTRACT==true){		
+							windowsize=WINDOW_SIZE;	//how many frames before stimulus onset for basal start
+							//calculate array of moving windows means
+							movingWindowARRAY=newArray(yc.length);
+							tt=0;
+							while (tt<yc.length){
+								sum=0;
+								add=tt-(windowsize/2);
+								num=0;
+								while (add<tt+(windowsize/2)){
+									if (add > 0 && add<yc.length){
+										sum +=yc[add];
+										num +=1;
+										}
+									add +=1;
+									}
+								average=(sum/num);
+								movingWindowARRAY[tt]=average;	
+								tt+=1;		
+								}
+									
+							for (q=0; q<xc.length; q++){
+								yc[q] = (getResult("Value",q))-(movingWindowARRAY[q]); //moving window mean function subtraction
+								}
+							 			
+							//Array.print(movingWindowARRAY);
+							}
+						run("Clear Results");
+						for (h=0; h<xc.length; h++) {
+							setResult("Frame", h, h+1);
+							setResult("Value", h, yc[h]);
+							updateResults;
+							}
+					/*----------------------------------------------------------------------------------------------------------------------*/	
+						//setting basal frames pre stimulus as zero basal
+						if (BASAL_SUBSTRACT==true){		
+								startbasal=BASAL_FROM; //how many frames before stimulus onset for basal start
+								stopbasal=BASAL_TO; //how many frames before stimulus onset for basal stop
+								bas=((StimulusON)-1)-(startbasal);//-1 for array
+								bas_minusone=((StimulusON)-1)-(stopbasal);//-1 for array
+								basal_mean_array=Array.slice(yc,bas,(bas_minusone+1));//+1 to include it in the basal
+								
+								Array.getStatistics(basal_mean_array, min, max, mean, stdDev);
+								basal=mean;
+								r = nResults();
+								xcbasal = newArray(r); //bcbasal array with corrected results
+								
+								for (q=0; q<xcbasal.length; q++){
+									xcbasal[q] = getResult("Frame", q);
+									}
+								
+								ycbasal = newArray(r);
+										
+								for (q=0; q<xcbasal.length; q++){
+									ycbasal[q] = (getResult("Value",q))-(basal); //fitted log function subtraction
+									}
+								 
+								//save the bleach_corrected deltaF curve
+								Array.print(ycbasal);
+								}
+							
+					/*---------------------------------------------------------------------------------------------------------------------------------*/
+						/*if (BASAL_SUBSTRACT==false ) {
+							Array.print(yc);		
+							}*/
+						/*----------------------------------------------------------------------------------------------------------------------*/	
+						
+						//subtract from the trace the minimum value of the whole stack that is not zero
+						if (SUBTRACT_NON_ZERO_MINIMUM==true){		
+								r = nResults();
+								yc_lessmin = newArray(r);
+										
+								for (q=0; q<yc_lessmin.length; q++){
+									yc_lessmin[q] = (getResult("Value",q))-(non_zero_minimum); //fitted log function subtraction
+									}
+								 
+								//save the bleach_corrected deltaF curve
+								Array.print(yc_lessmin);
+								}
+							
+					/*---------------------------------------------------------------------------------------------------------------------------------*/
+						else {
+							Array.print(yc);		
+							}	
+						close();
+						run ("Clear Results");
+						}	//end of rois iteration loop if MASKS!!!!
+					}	//end for Masks option
+				/*=========================================================================================================================*/	
+				if (TissueStabil==true){
+					if (File.exists(DIR_PATH+"ImageJ_Output_Stabil/"+EXP_N+"_roisresults/")==false){	//look for output folder, if doesn't exist yet, create it
+					File.makeDirectory(DIR_PATH+"ImageJ_Output_Stabil/"+EXP_N+"_roisresults/");
+					}
+					OUTPUT_DIR=DIR_PATH+"ImageJ_Output_Stabil/"+EXP_N+"_roisresults/";
+					selectWindow("Log");
+					save(OUTPUT_DIR+VIDEO_NAME+".txt");		
+				}
+				else {
+					if (File.exists(DIR_PATH+"ImageJ_Output/"+EXP_N+"_roisresults/")==false){	//look for output folder, if doesn't exist yet, create it
+					File.makeDirectory(DIR_PATH+"ImageJ_Output/"+EXP_N+"_roisresults/");
+					}
+					OUTPUT_DIR=DIR_PATH+"ImageJ_Output/"+EXP_N+"_roisresults/";
+					selectWindow("Log");
+					save(OUTPUT_DIR+VIDEO_NAME+".txt");
+				}
+				
+				
+				close();
+				run("Clear Results");
+				print("\\Clear");
+								 
+				}	//end of FOR loop on v files
+			}
+		}	//end of loop for MULTIPLE EXPERIMENTS
+		
+	//setBatchMode("exit and display");
+	showStatus("Finished");
+	
+	//Creation of the finished dialog box
+	Dialog.create("measure");
+	Dialog.addMessage("Finished");
+	beep();
+	wait(500);
+	beep();
+	wait(500);
+	beep();
+	Dialog.show();
+	
+	}	//end of macro
