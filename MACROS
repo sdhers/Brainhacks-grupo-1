@@ -1,0 +1,44 @@
+
+function getdirfilelist(directory, extension){
+	filelist = getFileList(directory);
+	//keep only ".extension" filelist
+	for (i=0; i<filelist.length; i++){
+		if (endsWith(filelist[i], extension)) filelist[i]=filelist[i];
+		else filelist[i]="NAN";
+		}
+	//filelist=Array.deleteValue(filelist, "NAN");
+	return filelist;
+	}
+	
+
+directory= getDirectory("Choose a Directory")
+directorylist=getFileList(directory)
+//Array.print(directorylist);
+for (i = 0; i < directorylist.length; i++) {
+	datafile=getdirfilelist(directory+directorylist[i],"ome.tif");
+	metadatafiles=getdirfilelist(directory+directorylist[i],"_metadata.txt");
+	//Array.print(metadatafiles);
+	//File.openAsString(directory+directorylist[i]+metadatafiles[1]);
+	meta=File.openAsRawString(directory+directorylist[i]+metadatafiles[1], 1000);
+	starttimeindex=indexOf(meta, "StartTime") + 13;
+	lengthofdata=25;
+	time=substring(meta, starttimeindex ,starttimeindex +lengthofdata);
+	
+	
+	dataname=substring(directorylist[i],0, lengthOf(directorylist[i])-1);
+
+	//export video and timing to txt file
+	File.append(dataname + "," + time , directory+ "timing.txt");
+	
+	print(dataname + "," + time);
+
+	//rename file
+	//print(directory+directorylist[i]+ datafile[0]);
+	//print(directory+directorylist[i]+ dataname+".ome.tif");
+	File.rename(directory+directorylist[i]+datafile[0], directory+directorylist[i]+ dataname+".ome.tif");
+	//copy to directory
+	File.copy(directory+directorylist[i]+ dataname+".ome.tif", directory+dataname+".ome.tif");
+	//delete from directory subfolder
+	File.delete(directory+directorylist[i]+ dataname+".ome.tif");
+	
+}
