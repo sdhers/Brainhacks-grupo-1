@@ -1,14 +1,20 @@
 import pandas as pd
 import numpy as np
 
+def suavizar(vec, n):
+    kernel = [1 / n] * n
+    return np.convolve(vec, kernel, "same")
+
 class Punto:
     def __init__(self, df, tabla):
         data = df[tabla]
         
-        x = data['x']
-        y = data['y']
+        x = suavizar(data['x'], 5)
+        y = suavizar(data['y'], 5)
         
         self.posiciones = np.dstack((x, y))[0]
+        
+        
     
     @staticmethod
     def dist(p1, p2):
