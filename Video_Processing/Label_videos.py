@@ -6,24 +6,27 @@ from tkinter import Tk, filedialog
 
 def process_frame(frame):
     # Implement your logic to process each frame
-    label = None
+    left = 0
+    right = 0
+    back = False
     # Display the frame
     cv2.imshow("Frame", frame)
     # Wait for a keystroke
     key = cv2.waitKey(0)
-    if key == ord('a'):
-        label = 'Exploring_left'
-    elif key == ord('d'):
-        label = 'Exploring_right'
-    elif key == ord('s'):
-        label = 'No exploration'
-    elif key == ord('f'):
-        label = 'Freezing'
-    elif key == ord('g'):
-        label = 'Grooming'
-    elif key == ord('w'):
-        label = 'back'
-    return label
+    if key == ord('1'):
+        left = 1
+    elif key == ord('3'):
+        right = 1
+    elif key == ord('2'):
+        pass
+        # label = 'No exploration'
+    # elif key == ord('f'):
+     #    label = 'Freezing'
+    # elif key == ord('g'):
+     #    label = 'Grooming'
+    elif key == ord('5'):
+        back = True
+    return left, right, back
 
 def main():
     # Create a Tkinter window
@@ -40,27 +43,30 @@ def main():
     # Open the video file
     video = VideoFileClip(video_path)
     
-    frame_labels = []
     frame_generator = video.iter_frames()
     frame_list = list(frame_generator) # This takes a while
+    frame_labels_left = ["-"]*len(frame_list)
+    frame_labels_right = ["-"]*len(frame_list)
     current_frame = 0
+    print(len(frame_list))
     
     while current_frame < len(frame_list):
         frame = frame_list[current_frame]
         
-        # Process the current frame
-        label = process_frame(frame)
+        # Process the current frames
+        left, right, back = process_frame(frame)
         
-        if label == 'back':
+        if back:
             # Go back one frame
             current_frame = max(0, current_frame - 1)
             continue
         
-        frame_labels.append(label)
-        
         # Break the loop if the user presses 'q'
         if keyboard.is_pressed('q'):
             break
+        
+        frame_labels_left[current_frame] = left
+        frame_labels_right[current_frame] = right
         
         current_frame += 1
 
@@ -68,9 +74,9 @@ def main():
     output_csv = video_path.rsplit('.', 1)[0] + '.csv'
     with open(output_csv, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Frame', 'Label'])
-        for i, label in enumerate(frame_labels):
-            writer.writerow([i+1, label])
+        writer.writerow(['Frame', 'Left', 'Right'])
+        for i, (left, right) in enumerate(zip(frame_labels_left, frame_labels_right)):
+            writer.writerow([i+1, left, right])
 
     # Close the OpenCV windows
     cv2.destroyAllWindows()
