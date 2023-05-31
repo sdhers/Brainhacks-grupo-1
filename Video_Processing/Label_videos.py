@@ -4,12 +4,26 @@ import csv
 from moviepy.editor import VideoFileClip
 from tkinter import Tk, filedialog
 
-def process_frame(frame):
+def process_frame(frame, frame_number):
     # Implement your logic to process each frame
     left = 0
     right = 0
     back = False
+    
     # Display the frame
+    frame_number_text = "Frame: {}".format(frame_number)
+    
+    # Define the position and font properties for the text
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    position = (10, 30)  # Adjust the position as needed
+    font_scale = 1
+    font_color = (0, 255, 0)  # BGR color format
+    thickness = 2
+    
+    # Add the text to the frame
+    cv2.putText(frame, frame_number_text, position, font, font_scale, font_color, thickness)
+    
+    # Display the frame with the frame number
     cv2.imshow("Frame", frame)
     # Wait for a keystroke
     key = cv2.waitKey(0)
@@ -54,7 +68,7 @@ def main():
         frame = frame_list[current_frame]
         
         # Process the current frames
-        left, right, back = process_frame(frame)
+        left, right, back = process_frame(frame, current_frame)
         
         if back:
             # Go back one frame
