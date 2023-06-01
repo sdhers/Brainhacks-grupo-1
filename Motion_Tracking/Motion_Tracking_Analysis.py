@@ -2,14 +2,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle
+%matplotlib qt
 
 #%%
 # Importar datos
-ruta = 'C:/Users/dhers/Desktop/Brainhacks/Brainhacks-grupo-1/Motion_Tracking/DataDLC/videos_eval'
+ruta = 'DataDLC/videos_eval/'
 
-file = ruta + 'TS - Caja 1 - A_L - Position.h5'
+file = ruta + 'TS - Caja 2 - A_L - Position.h5'
 
-df = pd.read_hdf('TS - Caja 1 - A_L - Position.h5')['DLC_resnet50_brainhackMay25shuffle1_230000']
+df = pd.read_hdf(file)['DLC_resnet50_brainhackMay25shuffle1_230000']
 
 df.head()
 
@@ -21,8 +22,28 @@ plt.plot( [np.mean(df['obj_2']['x'])], [np.mean(df['obj_2']['y'])],"o")
 
 #%%
 
-labels = pd.read_csv('TS - Caja 1 - A_L - Labels.csv')
+labels = pd.read_csv(ruta + 'TS - Caja 2 - A_L - Labels.csv')
 labels.head()
+
+
+#%% Simplificamos el data frame
+
+df2 = pd.DataFrame()
+
+for key in df.keys():
+    if key[1] != "likelihood":
+        df2[str( key[0] )+"_"+str( key[1] )] = df[key]
+    
+df2["label"] = labels["Left"] + 2*labels["Right"]
+
+
+df2.to_csv("prueba.csv")
+#%%
+
+
+
+
+
 
 #%%
 # Extraer datos de la nariz
@@ -129,7 +150,7 @@ for frame in range(L):
     elif angulo2[frame] < umbralA and dist2[frame] < umbralD:
         clasificador[frame] = 2     
     else:
-         clasificador[frame] = 0  
+        clasificador[frame] = 0  
 
 
 #%%
@@ -145,14 +166,18 @@ for frame in range(L):
 
 #%%
 
+clas_bosque = BA_model.predict( df2.drop(["label"], axis = 1))
+
 a, b = 0,-1
 plt.figure()
 plt.plot( clasificador[a:b]*50, color = "r", label = "Auto")
 plt.plot( clasificador_labels[a:b]*55, color = "g", label = "Manual")
+plt.plot( clas_bosque[a:b]*60, color = "b", label = "Bosque")
 plt.plot(angulo1[a:b], label = "Angulo1")
-plt.plot(angulo2[a:b] + 1000, label = "Angulo2")
+
+# plt.plot(angulo2[a:b] + 1000, label = "Angulo2")
 plt.plot( dist1[a:b], label = "Distancia1" )
-plt.plot( dist2[a:b] + 1000, label = "Distancia2" )
+# plt.plot( dist2[a:b] + 1000, label = "Distancia2" )
 plt.legend()
 plt.show()
 
