@@ -37,24 +37,24 @@ def process_frame(frame, frame_number, left, right):
     draw_text(frame, f"Left: {left}", pos = (int(frame.shape[0]*0.01), int(frame.shape[1]*0.01)))
 
     # Add right value to the frame
-    draw_text(frame, f"Right: {right}", pos = (int(frame.shape[0]*0.75), int(frame.shape[1]*0.01)))
+    draw_text(frame, f"Right: {right}", pos = (int(frame.shape[0]*0.90), int(frame.shape[1]*0.01)))
 
     # Display the frame with the frame number
     cv2.imshow("Frame", frame)
     # Wait for a keystroke
     key = cv2.waitKey(0)
-    if key == ord('a'):
+    if key == ord('1'):
         left = 1
         right = 0
-    if key == ord('d'):
+    if key == ord('3'):
         left = 0
         right = 1
-    if key == ord('e'):
+    if key == ord('0'):
         left = 0
         right = 0
-    if key == ord('s'):
+    if key == ord('2'):
         pass
-    if key == ord('w'):
+    if key == ord('5'):
         back = True
     return left, right, back
 
@@ -91,7 +91,7 @@ def main():
     frame_list = list(frame_generator) # This takes a while
     frame_labels_left = ["-"]*len(frame_list)
     frame_labels_right = ["-"]*len(frame_list)
-    current_frame = 7000
+    current_frame = 0
     
     while current_frame < len(frame_list):
               
