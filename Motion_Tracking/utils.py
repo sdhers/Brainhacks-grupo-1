@@ -38,7 +38,6 @@ class Vector():
         self.posiciones = p2.posiciones - p1.posiciones
         
         self.norm = np.linalg.norm(self.posiciones, axis=1)
-        print(self.norm.shape)
         
         if normalizar:
             self.posiciones = self.posiciones / np.repeat(
