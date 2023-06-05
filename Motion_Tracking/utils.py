@@ -1,16 +1,9 @@
 import pandas as pd
 import numpy as np
 
-def smooth(vec, n):
-    kernel = [1 / n] * n
-    return np.convolve(vec, kernel, "same")
-
 class Point:
     def __init__(self, df, table):
         data = df[table]
-        
-        x = smooth(data['x'], 5)
-        y = smooth(data['y'], 5)
         
         self.positions = np.dstack((x, y))[0]
     
@@ -27,6 +20,8 @@ class Obj(Point):
             len(self.positions),
             axis=0
         )
+        
+        self.coordinates = self.positions[0]
 
 class Vector():
     def __init__(self, p1, p2, normalize=True):
@@ -43,13 +38,20 @@ class Vector():
                 2,
                 axis=1
             )
-            
+    
     @staticmethod
-    def cosine(v1, v2):
+    def angle(v1, v2):
         length = len(v1.positions)
-        cos = np.zeros(length)
-
+        
+        angle = np.zeros(length)
+        
         for i in range(length):
-            cos[i] = np.dot(v1.positions[i], v2.positions[i])
+            angle[i] = np.rad2deg(
+                np.arccos(
+                    np.dot(
+                        v1.positions[i], v2.positions[i]
+                    )
+                )
+            )
             
-        return cos
+        return angle
