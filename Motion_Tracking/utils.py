@@ -5,6 +5,9 @@ class Point:
     def __init__(self, df, table):
         data = df[table]
         
+        x = data['x']
+        y = data['y']
+        
         self.positions = np.dstack((x, y))[0]
     
     @staticmethod
