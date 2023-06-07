@@ -16,10 +16,8 @@ ruta = 'DataDLC/videos_eval/'
 # Get the list of file names in the folder
 file_names = os.listdir(ruta)
 
-
 lista_h5 = []
 lista_labels = []
-
 
 # Print the file names
 for file_name in file_names:
@@ -30,9 +28,10 @@ for file_name in file_names:
 
 print(lista_labels)
 
+n_test = 4
 
-D_test = lista_h5.pop(4)
-l_test = lista_labels.pop(4)
+D_test = lista_h5.pop(n_test)
+l_test = lista_labels.pop(n_test)
 
 #%% Importar datos entrenamiento
 
@@ -92,12 +91,22 @@ X = data.drop(["label"], axis = 1)
 y = data.label.astype('int')
 
 # División 75% de datos para entrenamiento, 25% de daatos para test
-X_train, X_test, y_train, y_test = train_test_split(X, y,random_state=0)
+# X_train, X_test, y_train, y_test = train_test_split(X, y,random_state=0)
+X_train, y_train = X, y
 
 # Creaamos el modelo de Bosques Aleatorios (y configuramos el número de estimadores (árboles de decisión))
-BA_model = RandomForestClassifier(n_estimators = 19, 
-                                  random_state = 2016,
-                                  min_samples_leaf = 8,)
+BA_model = RandomForestClassifier(n_estimators = 100, random_state = 42, max_depth = 5, class_weight="balanced")
+
+
+# random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# grid_forest = {
+#     'n_estimators': range(100, 500, 100),
+#     'criterion': ['gini', 'entropy', 'log_loss'],
+#     'max_depth': [3, 4, 5, 8, 10],
+#     'max_features': ['sqrt', 'log2', None],
+#     'class_weight': ['balanced', None],
+# }
 
 BA_model.fit(X_train, y_train)
 
