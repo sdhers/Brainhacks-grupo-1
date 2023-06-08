@@ -37,60 +37,47 @@ Inspired by the [Recurse Centre](https://www.recurse.com/) initiative (formally 
 
 ### Tools
 
-The "project template" project will rely on the following technologies:
- * Markdown, to structure the text.
- * The Hugo website framework which is used by the BHS website. This makes it possible to easily add the markdown project description to the website.
- * Adding the project to the website relies on github, through pull requests.
+Our project will rely on the following technologies:
+
+ * Python, to write the scripts used to label and analyze our data.
+ * Jupyter Notebooks, to present our results in a clear and readable format.
+ * Deep Lab Cut, to track the movements of the mice in our videos.
 
 ### Data
 
-Ultimately, the project template will be used by all BHS participants. Data on the different projects will be aggregareted on the [following page](https://psy6983.brainhackmtl.org/project). This will serve as an additional example gallery in the years to come for future brainhack school students. Many reports from [BHS 2020](https://github.com/brainhack-school2020) already used this template.
+AGREGAR
 
 ### Deliverables
 
 At the end of this project, we will have:
- - The current markdown document, completed and revised.
- - A gallery of the student projects at Brainhack 2020.
- - Instructions on the website about how to submit a pull request to the [brainhack school website](https://github.com/PSY6983-2021) in order to add the project description to the website.
+ - A script to simplify the manual labeling of videos (including features to quickly label succesive frames by holding down a key and to go back if the user has made a mistake).
+ - A Jupyter Notebook where the labeled data and the tracked positions are imported and processed, and where each of our exploration detection methods is applied and compared to the others.
+ - Documentation on how to use our labeling script, Deep Lab Cut and each of our exploration detection methods.
 
 ## Results
 
 ### Progress overview
 
-The project was swiftly initiated by P Bellec, based on the existing template created in 2019 by Tristan Glatard and improved by different students. It was really not that hard. Community feedback is expected to lead to rapid further improvements of this first version.
+During the first week, we learned the basic tools which then allowed us to work on our project and collaborate easily: basic Bash commands, Git/GitHub and Python tools for data analysis. In the course of the following weeks, we defined the scope of our project and implemented each of our ideas with the help of our TAs.
 
-### Tools I learned during this project
+### Tools we learned during this project
 
- * **Meta-project** P Bellec learned how to do a meta project for the first time, which is developping a framework while using it at the same time. It felt really weird, but somehow quite fun as well.
- * **Github workflow-** The successful use of this template approach will demonstrate that it is possible to incorporate dozens of students presentation on a website collaboratively over a few weeks.
- * **Project content** Through the project reports generated using the template, it is possible to learn about what exactly the brainhack school students are working on.
+ * **Proper usage of version control systems for collaboration**: We learned how to properly use Git and Github to simplify collaboration between different team members.
 
 ### Results
 
-#### Deliverable 1: report template
+#### Video labeling script
 
-You are currently reading the report template! I will let you judge whether it is useful or not. If you think there is something that could be improved, please do not hesitate to open an issue [here](https://github.com/PSY6983-2021/project_template/issues/) and let us know.
+AGREGAR
 
-#### Deliverable 2: project gallery
+#### Motion tracking using DLC
 
-You can check out the [2020 BrainHack School project gallery](https://psy6983.brainhackmtl.org/project/)
+AGREGAR
 
-##### ECG pupilometry pipeline by Marce Kauffmann
+#### Applying and comparing each method
 
-The repository of this project can be found [here](https://github.com/mtl-brainhack-school-2019/ecg_pupillometry_pipeline_kaufmann). The objective was to create a processing pipeline for ECG and pupillometry data. The motivation behind this task is that Marcel's lab (MIST Lab @ Polytechnique Montreal) was conducting a Human-Robot-Interaction user study. The repo features:
- * a [video introduction](http://www.youtube.com/watch/8ZVCNeX42_A) to the project.
- * a presentation [made in a jupyter notebook](https://github.com/mtl-brainhack-school-2019/ecg_pupillometry_pipeline_kaufmann/blob/master/BrainHackPresentation.ipynb) on the results of the project.
- * Notebooks for all analyses.
- * Detailed requirements files, making it easy for others to replicate the environment of the notebook.
- * An overview of the results in the markdown document.
+The most important part of our project is contained in exploration_detection.ipynb. To start with, we import the labels and the tracked data for each video, 
 
-##### Other projects
-Here are other good examples of repositories:
-- [Learning to manipulate biosignals with python](https://github.com/mtl-brainhack-school-2019/franclespinas-biosignals) by François Lespinasse
-- [Run multivariate anaylysis to relate behavioral and electropyhysiological data](https://github.com/mtl-brainhack-school-2019/PLS_PV_Behaviour)
-- [PET pipeline automation and structural MRI exploration](https://github.com/mtl-brainhack-school-2019/rwickens-sMRI-PET) by Rebekah Wickens
-- [Working with PSG [EEG] data from Parkinson's patients](https://github.com/mtl-brainhack-school-2019/Soraya-sleep-data-in-PD-patients) by Cryomatrix
-- [Exploring Brain Functional Activation in Adolescents Who Attempted Suicide](https://github.com/mtl-brainhack-school-2019/Anthony-Gifuni-repo) by Anthony Gifuni
 
 #### Deliverable 3: Instructions
 
