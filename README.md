@@ -27,17 +27,11 @@ We were able to implement and compare three increasingly complex methods to dete
 
 # If you want to add a cover image (listpage and image in the right), add it to your directory and indicate the name
 # below with the extension.
-image: ""
+image: "DLC_example.JPG"
 ---
 <!-- This is an html comment and this won't appear in the rendered page. You are now editing the "content" area, the core of your description. Everything that you can do in markdown is allowed below. We added a couple of comments to guide your through documenting your progress. -->
 
 ## Project definition
-
-### Background
-
-Inspired by the [Recurse Centre](https://www.recurse.com/) initiative (formally known as the "hacker school"), Brainhack School was established in 2018 with the mission to train students from multidisciplinary backgrounds to a panoply of reproducible tools for neural data science, using a project-based approach. Following an initial 3-weeks long pilot, a 4th week was added with an intensive bootcamp, so that students could choose what tools to learn more deeply in their projects. As the course became integrated in standard curriculum at different universities, the formula seemed to be working. In order to streamline the different stages of the project, some standard template and milestones needed to be incorporated in a github-based workflow. The "project template" project (which is also our first BHS meta-project) aims at establishing such a standardized template. You can check the following [video](https://youtu.be/PTYs_JFKsHI) where Pierre Bellec gives an overview of the Brainhack school.
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/PTYs_JFKsHI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ### Tools
 
@@ -67,20 +61,30 @@ During the first week, we learned the basic tools which then allowed us to work 
 ### Tools we learned during this project
 
  * **Proper usage of version control systems for collaboration**: We learned how to properly use Git and Github to simplify collaboration between different team members.
+ * We learned how to implement python scripts to read and process mice positions and label frames using spyder.
+ * Finally, we could use the positions and labels to train a Random Forest (Machine Learning) model to predict labels on new videos.
 
 ### Results
 
 #### Video labeling script
 
-AGREGAR
+We developed different scrpts to be able to process the video information and label the frames with ease, you can find them in Video_processing/Label_Videos.py
 
 #### Motion tracking using DLC
 
-AGREGAR
+Once we got the positions from DLC, we could filter them according to distance and orientation towards the objects.
+
+#.
+image: "Criteria.png"
+---
 
 #### Applying and comparing each method
 
-The most important part of our project is contained in exploration_detection.ipynb. To start with, we import the labels and the tracked data for each video, 
+The most important part of our project is contained in exploration_detection.ipynb. To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then use the Random Forest model to process the positions and the given labels, and we test the unseen video using both the labels obtained manually, from the model and using the distance-orientation algorithm.
+
+#.
+image: "FrameperFrame.png"
+---
 
 
 #### Deliverable 3: Instructions
@@ -89,6 +93,3 @@ The most important part of our project is contained in exploration_detection.ipy
 
 ## Conclusion and acknowledgement
 
-The BHS team hope you will find this template helpful in documenting your project. Developping this template was a group effort, and benefitted from the feedback and ideas of all BHS students over the years.
-
-You can also make submit your project to neurolibre https://neurolibre.org/. It is a preprint server for interactive data analyses. It is tailored for publishing interactive neuroscience notebooks that can seamlessly integrate data, text, code and figures.The submission instructions can be found here https://docs.neurolibre.org/en/latest/index.html and the jupyter book docs there https://jupyterbook.org/intro.html.
