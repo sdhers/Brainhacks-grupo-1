@@ -37,7 +37,7 @@ Our project will rely on the following technologies:
 
  * Python, to write the scripts used to label and analyze our data.
  * Jupyter Notebooks, to present our results in a clear and readable format.
- * DeepLabCut, to track movements of mice in our videos.
+ * DeepLabCut, to track movements of mice in our videos. The accurate instructions on how to use DLC can be found here https://github.com/DeepLabCut/DeepLabCut
 
 ### Data
 
@@ -72,7 +72,7 @@ We developed different scrpts to be able to process the video information and la
 
 Once we got the positions from DLC, we could filter them according to distance and orientation towards the objects.
 
-#.
+
 image: "Criteria.png"
 ---
 
@@ -80,7 +80,6 @@ image: "Criteria.png"
 
 The most important part of our project is contained in exploration_detection.ipynb. To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then use the Random Forest model to process the positions and the given labels, and we test the unseen video using both the labels obtained manually, from the model and using the distance-orientation algorithm.
 
-#.
 image: "FrameperFrame.png"
 ---
 
@@ -90,4 +89,11 @@ image: "FrameperFrame.png"
  To be made available soon.
 
 ## Conclusion and acknowledgement
+In a video where mice spend approximately 7% of the time exploring, the automatic labeling got 81.7% of the manual labels right (18.3% of false negatives), labeling an extra 17.3% labels wrong (false positives).
+
+In the other hand, the trained random forest model got 90.2% of the manual labels right (leaving 9.8% of false negatives), labeling an extra 11.7% labels wrong (false positives).
+
+We would like to thank our TAs, and Tomás Pastore in particular, for all the help they provided while we were working on our project.
+
+We would also like to thank the BrainHack team for organizing the school and everyone at Humai for hosting the Buenos Aires hub.
 
