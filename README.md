@@ -10,17 +10,15 @@ names: [Pilar Lopez Maggi, Gonzalo Giordano, Ana Pavlova Contreras, Santiago D'h
 # Your project GitHub repository URL
 github_repo: [github.com/sdhers/Mice-Behavioral-Analysis]
 
-# If you are working on a project that has website, indicate the full url including "https://" below or leave it empty.
-website:
-
 # List +- 4 keywords that best describe your project within []. Note that the project summary also involves a number of key words. Those are listed on top of the [github repository](https://github.com/PSY6983-2021/project_template), click `manage topics`.
 # Please only lowercase letters
 tags: [mice, tracking, machine learning, python]
 
-# Summarize your project in < ~75 words. This description will appear at the top of your page and on the list page with other projects..
+# Summarize your project in < ~75 words. This description will appear at the top of your page and on the list page with other projects.
+
 Our project aims to develop different methods for the analysis of behavior in mice (in this case, exploration of an object) to determine which is the best approach to this kind of study.
 The accurate measurement of these behaviours is crucial for the study of neurodegenerative pathologies, such as Alzheimer’s disease.
-We were able to implement and compare three increasingly complex methods to determine exploration time:
+We were able to implement and compare three increasingly complex methods to determine exploration time.
  * Manual labeling.
  * Motion tracking and data analysis using a custom algorithm.
  * Training a Machine Learning algorithm on our labeled data.
