@@ -8,7 +8,7 @@ title: "This is an example project page which serves as a template"
 names: [Pilar Lopez Maggi, Gonzalo Giordano, Ana Pavlova Contreras, Santiago D'hers]
 
 # Your project GitHub repository URL
-github_repo: [https://github.com/sdhers/Mice-Behavioral-Analysis]
+github_repo: [github.com/sdhers/Mice-Behavioral-Analysis]
 
 # If you are working on a project that has website, indicate the full url including "https://" below or leave it empty.
 website:
