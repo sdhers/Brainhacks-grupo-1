@@ -8,7 +8,7 @@ title: "This is an example project page which serves as a template"
 names: [Pilar López Maggi, Gonzalo Giordano, Ana Pavlova Contreras, Santiago D'hers]
 
 # Your project GitHub repository URL
-github_repo: github.com/sdhers/Mice-Behavioral-Analysis
+github_repo: https://github.com/sdhers/Mice-Behavioral-Analysis.git
 
 # List +- 4 keywords that best describe your project within []. Note that the project summary also involves a number of key words. Those are listed on top of the [github repository](https://github.com/PSY6983-2021/project_template), click `manage topics`.
 # Please only lowercase letters
@@ -57,7 +57,7 @@ We worked on videos obtained with C57 mice during a Novel Object Recognition exp
 At the end of this project, we will have:
  - A script to simplify the manual labeling of videos (including features to quickly label succesive frames by holding down a key and to go back if the user has made a mistake).
  - A Jupyter Notebook where the labeled data and the tracked positions are imported and processed, and where each of our exploration detection methods is applied and compared to the others.
- - A `requirements.txt` file and the data used during the project, to simplify the reproduction of our results.
+ - A [`requirements.txt`](https://github.com/sdhers/Mice-Behavioral-Analysis/tree/main/requirements.txt) file and the data used during the project, to simplify the reproduction of our results.
 
 ## Results
 
@@ -75,15 +75,15 @@ During the first week, we learned the basic tools which then allowed us to work 
 
 #### Video labeling script
 
-We developed [a script](./Video_Processing/Label_videos.py) to be able to process the video information and label the frames with ease.
+We developed a script to be able to process the video information and label the frames with ease. It can be found at [`Video_Processing/Label_videos.py`](https://github.com/sdhers/Mice-Behavioral-Analysis/tree/main/Video_Processing/Label_videos.py).
 
 #### Motion tracking using DLC
 
-We used Deep Lab Cut to track the positions of different parts of the mice in each of the videos. The resulting data (in `h5` format) can be found under `Motion_Tracking/DataDLC/videos_eval/`.
+We used Deep Lab Cut to track the positions of different parts of the mice in each of the videos. The resulting data (in `h5` format) can be found under [`Motion_Tracking/DataDLC/videos_eval/`](https://github.com/sdhers/Mice-Behavioral-Analysis/tree/main/Motion_Tracking/DataDLC/videos_eval/).
 
 #### Applying and comparing each method
 
-The most important part of our project is contained in [`exploration_detection.ipynb`](./Motion_Tracking/exploration_detection.ipynb). To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then develop our custom algorithm for detecting explorations based on the positions tracked by DLC. This algorithm labels a frame as an exploration if the mouse is both close to a given object and looking at it. In order to determine the proximity and orientation of the mouse, we extract the positions of its nose and its head. We then filter the points wehre the nose is close to the object and the angle between the head-nose vector and the head-object vector is small. Our code makes use of a series of classes defined in [`Motion-Tracking/utils.py`](./Motion_Tracking/utils.py) to handle the math.
+The most important part of our project is contained in [`exploration_detection.ipynb`](https://github.com/sdhers/Mice-Behavioral-Analysis/tree/main/Motion_Tracking/exploration_detection.ipynb). To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then develop our custom algorithm for detecting explorations based on the positions tracked by DLC. This algorithm labels a frame as an exploration if the mouse is both close to a given object and looking at it. In order to determine the proximity and orientation of the mouse, we extract the positions of its nose and its head. We then filter the points where the nose is close to the object and the angle between the head-nose vector and the head-object vector is small. Our code makes use of a series of classes defined in [`Motion_Tracking/utils.py`](https://github.com/sdhers/Mice-Behavioral-Analysis/tree/main/Motion_Tracking/utils.py) to handle the math.
 
 ![image](./Criteria.png)
 
@@ -91,12 +91,26 @@ We then use the Random Forest model to process the positions and the given label
 
 The notebook contains a detailed explanation of the process used to import and analyze our data, as well as a description of our custom algorithm and a comparison between the three detection methods.
 
-![image](./FrameperFrame.png)
+Some of the plots used to compare the three methods are shown below.
+
+The first shows a time series extracted from the test video, showing that all three methods seem to generally agree on which parts of the video constitute explorations of the different objects, even if they sometimes differ on the predicted length of each exploration event.
+
+![image](./TimeSeries.png)
+
+Then, in order to compare the distance and orientation of the mouse at the explorations detected by each method, we plot the position of the mouse in each frame using polar coordinates, where the radial coordinate is the distance to object one of the objects, and the angular coordinate is the orientation.
+
+To simplify the comparison between the three detection methods, the region considered for explorations by our custom algorithm is delimited by a dashed line (on the right hand side), and the points are plotted twice: on the left, we highlight the manual detections in red, while on the right, we highlight the Machine Learning algorithm's detections in blue.
+
+![image](./Angle1.png)
+
+We can see that all three methods seem to agree in the region considered for explorations by our custom algorithm, since most points there are also detected by our manual method and by the Machine Learning algorithm.
+
+However, there are several points in the range of angles between $135$° and $180$° where both the manual method and the Machine Learning algorithm detect explorations; this range is not considered by our custom algorithm, which shows its limitations.
 
 ## Conclusion
-In a video where mice spend approximately 7% of the time exploring, the automatic labeling got 81.7% of the manual labels right (18.3% of false negatives), labeling an extra 17.3% labels wrong (false positives).
+In a video where the mouse spent 7.01% of the time exploring, the custom geometric method and the model detected 5.83% and 5.97% respectively. The custom geometric method got 16.92% of false positives and 18.44% of false negatives, while the Random Forest method got 14.83% of false positives and 16.54% of false negatives.
 
-In the other hand, the trained random forest model got 90.2% of the manual labels right (leaving 9.8% of false negatives), labeling an extra 11.7% labels wrong (false positives).
+These numbers, along with the analyses made on the plots, seem to point to the Machine Learning algorithm as the superior computional method to detect explorations.
 
 ## Acknowledgements
 
@@ -111,4 +125,3 @@ In the future, we would like to improve our work by:
 - Having several different experimenters create manual labels for each video, in order to reduce experimenter bias.
 - Exploring different sets of hyperparameters for our Random Forest model.
 - Evaluating our Machine Learning model using a different metric, such as a ROC curve.
-
