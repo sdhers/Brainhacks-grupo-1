@@ -5,7 +5,7 @@ date: "2023-06-09" # Date you first upload your project.
 title: "This is an example project page which serves as a template"
 
 # List the names of the collaborators within the [ ]. If alone, simple put your name within []
-names: [Pilar Lopez Maggi, Gonzalo Giordano, Ana Pavlova Contreras, Santiago D'hers]
+names: [Pilar López Maggi, Gonzalo Giordano, Ana Pavlova Contreras, Santiago D'hers]
 
 # Your project GitHub repository URL
 github_repo: github.com/sdhers/Mice-Behavioral-Analysis
