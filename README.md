@@ -85,7 +85,7 @@ We used Deep Lab Cut to track the positions of different parts of the mice in ea
 
 The most important part of our project is contained in [`exploration_detection.ipynb`](https://github.com/sdhers/Mice-Behavioral-Analysis/tree/main/Motion_Tracking/exploration_detection.ipynb). To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then develop our custom algorithm for detecting explorations based on the positions tracked by DLC. This algorithm labels a frame as an exploration if the mouse is both close to a given object and looking at it. In order to determine the proximity and orientation of the mouse, we extract the positions of its nose and its head. We then filter the points where the nose is close to the object and the angle between the head-nose vector and the head-object vector is small. Our code makes use of a series of classes defined in [`Motion_Tracking/utils.py`](https://github.com/sdhers/Mice-Behavioral-Analysis/tree/main/Motion_Tracking/utils.py) to handle the math.
 
-![image](./Criteria.png)
+![image](./criteria.png)
 
 We then use the Random Forest model to process the positions and the given labels, and we test the model on the unseen video, by comparing its detection both to the labels obtained manually, and to those resulting from the distance-orientation algorithm.
 
