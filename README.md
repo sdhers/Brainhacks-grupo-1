@@ -80,7 +80,7 @@ Once we got the positions from DLC, we could filter them according to distance a
 
 The most important part of our project is contained in exploration_detection.ipynb. To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then use the Random Forest model to process the positions and the given labels, and we test the unseen video using both the labels obtained manually, from the model and using the distance-orientation algorithm.
 
-![image](./FrameByFrame.png)
+![image](./FrameperFrame.png)
 ---
 
 
