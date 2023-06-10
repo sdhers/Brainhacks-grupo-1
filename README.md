@@ -47,7 +47,7 @@ We worked on videos obtained with C57 mice during a Novel Object Recognition exp
 At the end of this project, we will have:
  - A script to simplify the manual labeling of videos (including features to quickly label succesive frames by holding down a key and to go back if the user has made a mistake).
  - A Jupyter Notebook where the labeled data and the tracked positions are imported and processed, and where each of our exploration detection methods is applied and compared to the others.
- - Documentation on how to use our labeling script, Deep Lab Cut and each of our exploration detection methods.
+ - A `requirements.txt` file and the data used during the project, to simplify the reproduction of our results.
 
 ## Results
 
@@ -58,41 +58,45 @@ During the first week, we learned the basic tools which then allowed us to work 
 ### Tools we learned during this project
 
  * **Proper usage of version control systems for collaboration**: We learned how to properly use Git and Github to simplify collaboration between different team members.
- * We learned how to implement python scripts to read and process mice positions and label frames using spyder.
- * Finally, we could use the positions and labels to train a Random Forest (Machine Learning) model to predict labels on new videos.
+ * We learned how to implement Python scripts to read and process mice positions and label frames.
+ * Finally, we managed to use the positions and labels to train a Random Forest model to predict labels on new videos.
 
 ### Results
 
 #### Video labeling script
 
-We developed different scrpts to be able to process the video information and label the frames with ease, you can find them in Video_processing/Label_Videos.py
+We developed [a script](./Video_Processing/Label_videos.py) to be able to process the video information and label the frames with ease.
 
 #### Motion tracking using DLC
 
-Once we got the positions from DLC, we could filter them according to distance and orientation towards the objects.
-
+We used Deep Lab Cut to track the positions of different parts of the mice in each of the videos. The resulting data (in `h5` format) can be found under `Motion_Tracking/DataDLC/videos_eval/`.
 
 ![image](./Criteria.png)
----
 
 #### Applying and comparing each method
 
-The most important part of our project is contained in exploration_detection.ipynb. To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then use the Random Forest model to process the positions and the given labels, and we test the unseen video using both the labels obtained manually, from the model and using the distance-orientation algorithm.
+The most important part of our project is contained in [exploration_detection.ipynb](./Motion_Tracking/exploration_detection.ipynb). To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then use the Random Forest model to process the positions and the given labels, and we test the model on the unseen video, by comparing its detection both to the labels obtained manually, and to those resulting from the distance-orientation algorithm.
+
+The notebook contains a detailed explanation of the process used to import and analyze our data, as well as a description of our custom algorithm and a comparison between the three detection methods.
 
 ![image](./FrameperFrame.png)
----
 
-
-#### Deliverable 3: Instructions
-
- To be made available soon.
-
-## Conclusion and acknowledgement
+## Conclusion
 In a video where mice spend approximately 7% of the time exploring, the automatic labeling got 81.7% of the manual labels right (18.3% of false negatives), labeling an extra 17.3% labels wrong (false positives).
 
 In the other hand, the trained random forest model got 90.2% of the manual labels right (leaving 9.8% of false negatives), labeling an extra 11.7% labels wrong (false positives).
 
+## Acknowledgements
+
 We would like to thank our TAs, and Tomás Pastore in particular, for all the help they provided while we were working on our project.
 
 We would also like to thank the BrainHack team for organizing the school and everyone at Humai for hosting the Buenos Aires hub.
+
+## Next steps
+
+In the future, we would like to improve our work by:
+
+- Having several different experimenters create manual labels for each video, in order to reduce experimenter bias.
+- Exploring different sets of hyperparameters for our Random Forest model.
+- Evaluating our Machine Learning model using a different metric, such as a ROC curve.
 
