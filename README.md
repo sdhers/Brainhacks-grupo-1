@@ -30,6 +30,16 @@ image: "DLC_example.JPG"
 
 ## Project definition
 
+## Background
+
+Our project aims to develop different methods for the analysis of behavior in mice (in this case, exploration of an object) to determine which is the best approach to this kind of study. The accurate measurement of these behaviours is crucial for the study of neurodegenerative pathologies, such as Alzheimer’s disease.
+
+We aim to work with and compare three different and increasingly complex methods:
+
+* Manual labeling.
+* Motion tracking and data analysis using a custom algorithm.
+* Training a Machine Learning algorithm on our labeled data.
+
 ### Tools
 
 Our project will rely on the following technologies:
@@ -71,11 +81,13 @@ We developed [a script](./Video_Processing/Label_videos.py) to be able to proces
 
 We used Deep Lab Cut to track the positions of different parts of the mice in each of the videos. The resulting data (in `h5` format) can be found under `Motion_Tracking/DataDLC/videos_eval/`.
 
-![image](./Criteria.png)
-
 #### Applying and comparing each method
 
-The most important part of our project is contained in [exploration_detection.ipynb](./Motion_Tracking/exploration_detection.ipynb). To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then use the Random Forest model to process the positions and the given labels, and we test the model on the unseen video, by comparing its detection both to the labels obtained manually, and to those resulting from the distance-orientation algorithm.
+The most important part of our project is contained in [`exploration_detection.ipynb`](./Motion_Tracking/exploration_detection.ipynb). To start with, we import the labels and the tracked data for each video, and we separate a video to use later to test the model. We then develop our custom algorithm for detecting explorations based on the positions tracked by DLC. This algorithm labels a frame as an exploration if the mouse is both close to a given object and looking at it. In order to determine the proximity and orientation of the mouse, we extract the positions of its nose and its head. We then filter the points wehre the nose is close to the object and the angle between the head-nose vector and the head-object vector is small. Our code makes use of a series of classes defined in [`Motion-Tracking/utils.py`](./Motion_Tracking/utils.py) to handle the math.
+
+![image](./Criteria.png)
+
+We then use the Random Forest model to process the positions and the given labels, and we test the model on the unseen video, by comparing its detection both to the labels obtained manually, and to those resulting from the distance-orientation algorithm.
 
 The notebook contains a detailed explanation of the process used to import and analyze our data, as well as a description of our custom algorithm and a comparison between the three detection methods.
 
