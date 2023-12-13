@@ -15,12 +15,7 @@ github_repo: https://github.com/sdhers/Mice-Behavioral-Analysis.git
 tags: [mice, tracking, machine learning, exploration detection]
 
 # Summarize your project in < ~75 words. This description will appear at the top of your page and on the list page with other projects.
-summary: "Our project aims to develop different methods for the analysis of behavior in mice (in this case, exploration of an object) to determine which is the best approach to this kind of study.
-The accurate measurement of these behaviours is crucial for the study of neurodegenerative pathologies, such as Alzheimer’s disease.
-We were able to implement and compare three increasingly complex methods to determine exploration time.
- * Manual labeling.
- * Motion tracking and data analysis using a custom algorithm.
- * Training a Machine Learning algorithm on our labeled data."
+summary: "Our project aims to develop different methods for the analysis of behavior in mice to determine which is the best approach to this kind of study.
 
 # If you want to add a cover image (listpage and image in the right), add it to your directory and indicate the name
 # below with the extension.
