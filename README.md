@@ -1,8 +1,8 @@
 ---
-type: "project" # DON'T TOUCH THIS ! :)
+type: "Brainhacks project" # DON'T TOUCH THIS ! :)
 date: "2023-06-09" # Date you first upload your project.
 # Title of your project (we like creative title)
-title: "This is an example project page which serves as a template"
+title: "Mice Behavioral Analysis"
 
 # List the names of the collaborators within the [ ]. If alone, simple put your name within []
 names: [Pilar López Maggi, Gonzalo Giordano, Ana Pavlova Contreras, Santiago D'hers]
@@ -29,6 +29,8 @@ image: "DLC_example.JPG"
 <!-- This is an html comment and this won't appear in the rendered page. You are now editing the "content" area, the core of your description. Everything that you can do in markdown is allowed below. We added a couple of comments to guide your through documenting your progress. -->
 
 ## Project definition
+
+We developed a python script that allows users to go from tracked coordenates in a dataframe to actual behavior analysis of mice exploring objects.
 
 ## Background
 
